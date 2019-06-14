@@ -6,7 +6,9 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
-
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#include "contrib/arm/neon_adler32.h"
+#endif
 local uLong adler32_combine_ OF((uLong adler1, uLong adler2, z_off64_t len2));
 
 #define BASE 65521U     /* largest prime smaller than 65536 */
@@ -65,6 +67,11 @@ uLong ZEXPORT adler32_z(adler, buf, len)
     const Bytef *buf;
     z_size_t len;
 {
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    if (len >= 16)
+        return NEON_adler32(adler, buf, len);
+#endif
+
     unsigned long sum2;
     unsigned n;
 
