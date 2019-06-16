@@ -31,9 +31,7 @@ cc_library {
         "src/gzread.c",
         "src/gzwrite.c",
         "src/infback.c",
-        "src/inflate.c",
         "src/inftrees.c",
-        "src/inffast.c",
         "src/trees.c",
         "src/uncompr.c",
         "src/zutil.c",
@@ -41,13 +39,43 @@ cc_library {
 
     arch: {
         arm: {
-            // measurements show that the ARM version of ZLib is about x1.17 faster
-            // than the thumb one...
-            instruction_set: "arm",
+            neon: {
+                // measurements show that the ARM version of ZLib is about x1.17 faster
+                // than the thumb one...
+                instruction_set: "arm",
 
-            // TODO: This is to work around b/24465209. Remove after root cause is fixed
-            pack_relocations: false,
-            ldflags: ["-Wl,--hash-style=both"],
+                // TODO: This is to work around b/24465209. Remove after root cause is fixed
+                pack_relocations: false,
+                ldflags: ["-Wl,--hash-style=both"],
+                local_include_dirs: [
+                     "src/",
+                ],
+                srcs: [
+                    "src/contrib/arm/inflate.c",
+                    "src/contrib/arm/inffast.c",
+                ],
+            },
+        },
+        arm64: {
+            local_include_dirs: [
+                "src/",
+            ],
+            srcs: [
+                  "src/contrib/arm/inflate.c",
+                  "src/contrib/arm/inffast.c",
+            ],
+        },
+        x86: {
+            srcs: [
+                  "src/inflate.c",
+                  "src/inffast.c",
+            ],
+        },
+        x86_64: {
+            srcs: [
+                  "src/inflate.c",
+                  "src/inffast.c",
+            ],
         },
     },
 
