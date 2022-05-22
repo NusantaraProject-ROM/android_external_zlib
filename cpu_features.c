@@ -17,16 +17,8 @@
 
 /* TODO(cavalcantii): remove checks for x86_flags on deflate.
  */
-#if defined(ARMV8_OS_MACOS)
-/* crc32 is a baseline feature in ARMv8.1-A, and macOS running on arm64 is new
- * enough that this can be assumed without runtime detection. */
-#define ARMV8_ALWAYS_NEW
-#endif
 
-#if defined(ARMV8_ALWAYS_NEW)
-int ZLIB_INTERNAL arm_cpu_enable_crc32 = 1;
-int ZLIB_INTERNAL arm_cpu_enable_pmull = 1;
-#else
+#if !defined(ARMV8_ALWAYS_NEW)
 int ZLIB_INTERNAL arm_cpu_enable_crc32 = 0;
 int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 #endif
@@ -68,13 +60,11 @@ static void _cpu_check_features(void);
 // Do provide cpu_check_features() (with a no-op implementation) so that we
 // don't have to make all callers of it check for mac/arm.
 static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
-#endif
 void ZLIB_INTERNAL cpu_check_features(void)
 {
-#if !defined(ARMV8_ALWAYS_NEW)
     pthread_once(&cpu_check_inited_once, _cpu_check_features);
-#endif
 }
+#endif
 #elif defined(ARMV8_OS_WINDOWS) || defined(X86_WINDOWS)
 static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
 static BOOL CALLBACK _cpu_check_features_forwarder(PINIT_ONCE once, PVOID param, PVOID* context)
