@@ -32,13 +32,8 @@ cflags_arm = [
     // Testing with zlib_bench shows -O3 is a win for ARM but a bit of a wash
     // for x86, so match the BUILD file in only enabling this for ARM.
     "-O3",
-    // We need a non-NEON libz.a for the NDK, and cpu_features.c won't build
-    // without this.
-    "-DCPU_NO_SIMD",
 ]
 cflags_arm_neon = [
-    // Undo the -DCPU_NO_SIMD from the generic (non-NEON) ARM flags.
-    "-UCPU_NO_SIMD",
     // We no longer support non-Neon platform builds, but the NDK just has one libz.
     "-DADLER32_SIMD_NEON",
     // TODO: causes `atest org.apache.harmony.tests.java.util.zip.DeflaterTest` failures.
@@ -55,18 +50,9 @@ cflags_x86 = [
     "-DX86_NOT_WINDOWS",
     // TODO: see arm above.
     //    "-DINFLATE_CHUNK_SIMD_SSE2",
-    // Android's host CPU feature requirements are *lower* than the
-    // corresponding device CPU feature requirements, so it's easier to just
-    // say "no SIMD for you" rather than specificially disable SSSE3.
-    // We should have a conversation about that, but not until we at least have
-    // data on how many Studio users have CPUs that don't make the grade...
-    // https://issuetracker.google.com/171235570
-    "-DCPU_NO_SIMD",
 ]
 // The *device* x86 configuration (with *higher* CPU feature requirements).
 cflags_android_x86 = [
-    // Android's x86/x86-64 ABI includes SSE2 and SSSE3.
-    "-UCPU_NO_SIMD",
     "-DADLER32_SIMD_SSSE3",
     // PCLMUL isn't in the ABI, but it won't actually be used unless CPUID
     // reports that the processor really does have the instruction.

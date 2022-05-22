@@ -135,6 +135,7 @@ static void _cpu_check_features(void)
  * SIMD optimizations.
  */
 #ifndef CPU_NO_SIMD
+#include <cpuid.h>
 /* On x86 we simply use a instruction to check the CPU features.
  * (i.e. CPUID).
  */
