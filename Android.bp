@@ -25,6 +25,10 @@ srcs_opt = [
 ]
 
 cflags_arm = [
+    // Since we're building for the platform, we claim to be Linux rather than
+    // Android so we use getauxval() directly instead of the NDK
+    // android_getCpuFeatures which isn't available to us anyway.
+    "-DARMV8_OS_LINUX",
     // Testing with zlib_bench shows -O3 is a win for ARM but a bit of a wash
     // for x86, so match the BUILD file in only enabling this for ARM.
     "-O3",
@@ -142,32 +146,11 @@ cc_defaults {
         },
     },
     target: {
-        android_arm: {
-            cflags: [
-                // Since we're building for the platform, we claim to be Linux rather than
-                // Android so we use getauxval() directly instead of the NDK
-                // android_getCpuFeatures which isn't available to us anyway.
-                "-DARMV8_OS_LINUX",
-            ],
-        },
         android_x86: {
             cflags: cflags_android_x86,
         },
         android_x86_64: {
             cflags: cflags_android_x86,
-        },
-        darwin_arm64: {
-            cflags: [
-                "-DARMV8_OS_MACOS",
-            ],
-        },
-        linux_arm64: {
-            cflags: [
-                // Since we're building for the platform, we claim to be Linux rather than
-                // Android so we use getauxval() directly instead of the NDK
-                // android_getCpuFeatures which isn't available to us anyway.
-                "-DARMV8_OS_LINUX",
-            ],
         },
     },
 }
@@ -306,31 +289,4 @@ ndk_library {
     symbol_file: "libz.map.txt",
     first_version: "9",
     unversioned_until: "current",
-}
-
-// Export zlib headers for inclusion in the musl sysroot.
-genrule {
-    name: "libc_musl_sysroot_zlib_headers",
-    visibility: ["//external/musl"],
-    srcs: [
-        "LICENSE",
-        "zconf.h",
-        "zlib.h",
-    ],
-    out: ["libc_musl_sysroot_zlib_headers.zip"],
-    tools: [
-        "soong_zip",
-        "zip2zip",
-    ],
-    cmd: "$(location soong_zip) -o $(genDir)/sysroot.zip -symlinks=false" +
-        // NOTICE
-        " -j -f $(location LICENSE) " +
-        // headers
-        " -j -P include " +
-        "  -f $(location zconf.h) " +
-        "  -f $(location zlib.h) " +
-        " && " +
-        "$(location zip2zip) -i $(genDir)/sysroot.zip -o $(out) " +
-        " include/**/*:include " +
-        " LICENSE:NOTICE.zlib",
 }
